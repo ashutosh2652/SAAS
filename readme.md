@@ -1,126 +1,174 @@
-# SaaS Django Project
+# SaaS Foundations
 
-This is a Django-based SaaS starter project with user authentication, subscription management, Stripe integration, and a modern Tailwind CSS-powered frontend. It is organized for modular development and easy deployment.
+Build the foundations for a Software as a Service business by leveraging Django, Tailwind, htmx, Neon Postgres, Redis, and more.
 
-## Features
+The goal of this project is to learn how to create a reusable foundation for building SaaS products. When release, this course will span multiple topics and give you a solid foundation into build your business.
 
-- **User Authentication**: Registration, login, social login (GitHub via `django-allauth`).
-- **Subscription Management**: Plans, pricing, Stripe integration, user subscriptions.
-- **Admin Dashboard**: Manage users, subscriptions, and payments.
-- **Checkout System**: Stripe-based checkout flow.
-- **Profile Management**: User profiles and settings.
-- **Landing Page**: Customizable marketing landing page.
-- **Vendor Static Files**: Automated download and management of third-party static assets.
-- **Tailwind CSS**: Modern CSS framework for rapid UI development.
-- **Scheduled Tasks**: Management commands for syncing Stripe subscriptions and clearing dangling subscriptions.
-- **Helpers**: Utility modules for billing, dates, numbers, and file downloads.
 
-## Project Structure
+## Getting Started
 
-- `src/`
-  - `auth/` – User authentication and social login.
-  - `cfehome/` – Main Django project settings, URLs, and views.
-  - `checkouts/` – Stripe checkout and payment logic.
-  - `commando/` – Custom management commands (e.g., vendor static file pull).
-  - `customers/` – Customer models and logic.
-  - `dashboard/` – Admin dashboard views and models.
-  - `helpers/` – Utility functions for billing, dates, downloads, etc.
-  - `landing/` – Landing page models and views.
-  - `profiles/` – User profile management.
-  - `staticfiles/` – Static assets (Tailwind CSS, images, themes).
-  - `subscriptions/` – Subscription plans, pricing, Stripe integration.
-  - `templates/` – HTML templates for all pages.
-  - `visits/` – Tracking user visits and analytics.
+### Clone
+```bash
+mkdir -p ~/dev/saas
+cd ~/dev/saas
+git clone https://github.com/codingforentrepreneurs/SaaS-Foundations .
+```
 
-## Setup
+### Create Virtual Environment
 
-1. **Clone the repository**
+*macOS/Linux*
+```bash
+python3 --version # should be 3.11 or higher
+python3 -m venv venv
+source venv/bin/activate
+```
 
-   ```sh
-   git clone <your-repo-url>
-   cd SAAS-MAIN
-   ```
+*Windows*
+```bash
+c:\Python312\python.exe -m venv venv
+.\venv\Scripts\activate
+```
 
-2. **Install Python dependencies**
+### Install Requirements
+```bash
+# with venv activated
+pip install pip --upgrade && pip install -r requirements.txt
+```
 
-   ```sh
-   python -m pip install --upgrade pip
-   python -m pip install -r requirements.txt
-   ```
+### Sample dotenv to dotnev
 
-3. **Install Node.js dependencies (for Tailwind CSS)**
+```bash
+cp .env.sample .env
+cat .env
+```
+Values include:
+- `DJANGO_DEBUG=1`
+- `DJANGO_SECRET_KEY=""`
+- `DATABASE_URL=""`
+- `EMAIL_HOST="smtp.gmail.com"`
+- `EMAIL_PORT="587"`
+- `EMAIL_USE_TLS=True`
+- `EMAIL_USE_SSL=False`
+- `EMAIL_HOST_USER=""`
+- `EMAIL_HOST_PASSWORD=""`
+- `ADMIN_USER_EMAIL=""`
+- `STRIPE_SECRET_KEY=""`
 
-   ```sh
-   npm install
-   ```
 
-4. **Build Tailwind CSS**
+### Create the _DJANGO_SECRET_KEY_
 
-   ```sh
-   npm run build
-   ```
+```bash
+python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+```
+or
+```bash
+openssl rand -base64 64
+```
+or
+```bash
+python -c 'import secrets; print(secrets.token_urlsafe(64))'
+```
 
-5. **Apply Django migrations**
+Once you have this value, add update `DJANGO_SECRET_KEY` in `.env`.
 
-   ```sh
-   cd src
-   python manage.py migrate
-   ```
 
-6. **Collect static files**
+### Create [Neon](https://kirr.co/eu0b31) Postgres Database
 
-   ```sh
-   python manage.py vendor_pull
-   python manage.py collectstatic --noinput
-   ```
 
-7. **Run the development server**
-   ```sh
-   python manage.py runserver
-   ```
+#### Install Neon CLI
+Using the [Neon cli](https://neon.tech/docs/reference/cli-install) via [homebrew](https://brew.sh/):
 
-## Usage
+```bash
+brew install neonctl
+```
 
-- Access the site at `http://localhost:8000/`
-- Admin panel at `/admin/`
-- Register and log in as a user
-- Subscribe to plans and manage your profile
+#### Login to Neon CLI
 
-## Development
+```bash
+neonctl auth
+```
+This will open a browser window to login.
 
-- **Tailwind CSS**: Edit `src/staticfiles/base_tailwind/tailwind-input.css` and rebuild with `npm run build`.
-- **Custom Commands**: Use management commands like `vendor_pull` and `sync_user_subs` for maintenance.
-- **Tests**: Run tests with:
-  ```sh
-  python manage.py test
-  ```
+####  Create a new Neon project (optional)
+```bash
+neonctl projects create --name saas
+```
 
-## Environment Variables
+#### Get the Project ID
 
-Copy `.env.sample` to `.env` and fill in required secrets (e.g., Django secret key, Stripe keys).
+Once created, get the project id:
 
-## License
+```bash
+neonctl projects list
+```
+Projects
 
-See [LICENSE](LICENSE) for details.
+```bash
+┌──────────────────────────┬────────────────────────────┬───────────────┬──────────────────────┐
+│ Id                       │ Name                       │ Region Id     │ Created At           │
+├──────────────────────────┼────────────────────────────┼───────────────┼──────────────────────┤
+│ steep-base-11409687      │ saas                       │ aws-us-east-2 │ 2024-06-02T04:03:07Z │
+└──────────────────────────┴────────────────────────────┴───────────────┴──────────────────────┘
+```
 
----
+```bash
+PROJECT_ID=steep-base-11409687
+```
+Replace `steep-base-11409687` with your project id.
 
-**Folders and files referenced:**
+Or using the shortcut:
 
-- [src/manage.py](src/manage.py)
-- [src/cfehome/settings.py](src/cfehome/settings.py)
-- [src/auth/](src/auth/)
-- [src/checkouts/](src/checkouts/)
-- [src/commando/management/commands/vendor_pull.py](src/commando/management/commands/vendor_pull.py)
-- [src/customers/](src/customers/)
-- [src/dashboard/](src/dashboard/)
-- [src/helpers/](src/helpers/)
-- [src/landing/](src/landing/)
-- [src/profiles/](src/profiles/)
-- [src/staticfiles/](src/staticfiles/)
-- [src/subscriptions/](src/subscriptions/)
-- [src/templates/](src/templates/)
-- [src/visits/](src/visits/)
-- [requirements.txt](requirements.txt)
-- [package.json](package.json)
-- [.env.sample](.env.sample
+```bash
+PROJECT_ID=$(neonctl projects list | grep "saas" | awk -F '│' '{print $2}' | xargs)
+```
+
+#### Get the Database Connection String
+
+```bash
+neonctl connection-string --project-id "$PROJECT_ID"
+```
+Set this value to `DATABASE_URL` in `.env`.
+
+
+### Run Migrations
+
+```bash
+source venv/bin/activate
+# or .\venv\Scripts\activate if windows
+cd src
+# if there is error then use this to resolve the error of migration
+python manage.py migrate subscriptions 0006_subscription_active --fake
+python manage.py migrate subscriptions 0007_usersubscription --fake
+# then finally use this to migrate the database
+python manage.py migrate
+```
+
+### Create a Superuser
+
+```bash
+python manage.py createsuperuser
+```
+
+### Pull Vendor Static Files
+
+```bash
+python manage.py vendor_pull
+```
+
+
+### Create a Stripe Account
+
+1. Sign up on [Stripe.com](https://www.stripe.com) for an account
+2. Get or create a Stripe Secret API Key (Dashboard > Developers > API keys > _Secret key_ )
+3. Update _dotenv_ (`.env`) with the value `STRIPE_SECRET_KEY` with your key.
+
+
+### Run the Server
+
+```bash
+python manage.py runserver
+```
+
+Ready to roll! 🚀
+
+Much more coming soon!
